@@ -44,7 +44,7 @@ export default function LoginPage() {
       </CardHeader>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-400">
+        <div className="mb-4 rounded-sm bg-red-50 p-3 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -73,10 +73,10 @@ export default function LoginPage() {
 
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+          <div className="w-full border-t border-gray-300" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+          <span className="bg-white px-2 text-gray-500">
             Or continue with
           </span>
         </div>
@@ -93,11 +93,11 @@ export default function LoginPage() {
         GitHub
       </Button>
 
-      <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-4 text-center text-sm text-gray-500">
         Don&apos;t have an account?{" "}
         <Link
           href="/register"
-          className="font-medium text-blue-600 hover:text-blue-500"
+          className="font-medium text-[#bd4257] hover:text-[#9a3546] transition-colors"
         >
           Sign up
         </Link>

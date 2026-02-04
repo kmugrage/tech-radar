@@ -10,10 +10,10 @@ export default async function DashboardPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             My Radars
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-sm text-gray-500">
             Create and manage your technology radars
           </p>
         </div>
@@ -24,7 +24,7 @@ export default async function DashboardPage() {
 
       {radars.length === 0 ? (
         <Card className="py-12 text-center">
-          <p className="text-gray-500 dark:text-gray-400">
+          <p className="text-gray-500">
             You haven&apos;t created any radars yet.
           </p>
           <Link href="/radar/new" className="mt-4 inline-block">
@@ -40,7 +40,7 @@ export default async function DashboardPage() {
                   <CardTitle>
                     <Link
                       href={`/radar/${radar.id}`}
-                      className="hover:text-blue-600"
+                      className="hover:text-[#bd4257] transition-colors"
                     >
                       {radar.name}
                     </Link>

@@ -7,6 +7,7 @@ import {
   blipPosition,
   quadrantLabelPosition,
   ringLabelPosition,
+  resolveCollisions,
   type Point,
 } from "@/lib/radar-math";
 
@@ -99,6 +100,14 @@ export function useRadarGeometry(
         ringName: ring?.name ?? "",
         index: idx + 1,
       };
+    });
+
+    // Apply collision detection and resolution
+    const positions = blipData.map(b => b.position);
+    resolveCollisions(positions, 20, 50);
+    // Update blip positions with collision-resolved coordinates
+    blipData.forEach((blip, idx) => {
+      blip.position = positions[idx];
     });
 
     // Build labels

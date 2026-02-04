@@ -1,0 +1,35 @@
+name,quadrant,ring,isNew,description
+Context7,Tools,Trial,true,AI-powered tool for understanding and navigating large codebases
+UX Pilot,Tools,Trial,true,AI-assisted design tool for rapid prototyping and UX exploration
+v0,Tools,Assess,true,AI-powered UI generation tool from Vercel for rapid prototyping
+Nvidia DCGM Exporter,Tools,Adopt,false,Prometheus exporter for NVIDIA GPU metrics monitoring
+Kueue,Tools,Trial,false,Kubernetes job queueing system for managing batch workloads
+AI Design Reviewer,Tools,Assess,true,Automated design review tool using AI to check UI/UX consistency
+Bolt,Tools,Trial,false,Fast JavaScript bundler and development server
+Model Context Protocol (MCP),Platforms,Trial,true,Protocol for connecting AI assistants to external data sources and tools
+Agent-to-Agent (A2A) Protocol,Platforms,Assess,true,Communication protocol enabling AI agents to collaborate with each other
+Uncloud,Platforms,Assess,false,Platform for reducing cloud complexity and improving portability
+Kubernetes,Platforms,Adopt,false,Container orchestration platform for automated deployment and scaling
+AWS Lambda,Platforms,Adopt,false,Serverless compute service for running code without managing servers
+Context engineering,Techniques,Trial,true,Practice of crafting and managing context for AI models to improve output quality
+Topology-aware scheduling,Techniques,Trial,false,Scheduling technique that considers hardware topology for optimal workload placement
+AGENTS.md,Techniques,Assess,true,Documentation standard for describing AI agent capabilities and constraints
+Anchoring coding agents to a reference application,Techniques,Trial,true,Technique of providing AI coding assistants with reference implementations
+Using GenAI to understand legacy codebases,Techniques,Trial,true,Applying generative AI to analyze and document existing legacy systems
+Curated shared instructions for software teams,Techniques,Adopt,false,Centralized collection of team coding standards and AI prompt templates
+Self-serve UI prototyping,Techniques,Trial,true,Enabling designers and PMs to create functional prototypes without coding
+Spec-driven development,Techniques,Adopt,false,Development approach starting with detailed specifications before implementation
+Complacency with AI-generated code,Techniques,Hold,true,Over-reliance on AI code generation without proper review and understanding
+AI-accelerated shadow IT,Techniques,Hold,true,Uncontrolled proliferation of AI tools without proper governance
+Naive API-to-MCP conversion,Techniques,Hold,true,Simplistic conversion of APIs to MCP without proper design consideration
+Text-to-SQL,Techniques,Assess,false,Natural language to SQL query generation using AI
+TypeScript,Languages & Frameworks,Adopt,false,Typed superset of JavaScript providing better tooling and type safety
+Rust,Languages & Frameworks,Trial,false,Memory-safe systems programming language with performance benefits
+React,Languages & Frameworks,Adopt,false,JavaScript library for building user interfaces with component-based architecture
+Next.js,Languages & Frameworks,Adopt,false,React framework for production with server-side rendering and static generation
+Tailwind CSS,Languages & Frameworks,Adopt,false,Utility-first CSS framework for rapid UI development
+Svelte,Languages & Frameworks,Trial,false,Compiler-based framework that shifts work to build time for better performance
+Go,Languages & Frameworks,Adopt,false,Statically typed language designed for simplicity and efficiency
+Python,Languages & Frameworks,Adopt,false,High-level programming language popular for AI/ML and data science
+Kotlin,Languages & Frameworks,Adopt,false,Modern JVM language with improved syntax and null safety
+Swift,Languages & Frameworks,Adopt,false,Powerful language for iOS and macOS development with safety features

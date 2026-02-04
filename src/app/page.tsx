@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 export default function LandingPage() {
   return (
     <div className="flex flex-col items-center justify-center px-4 py-20 text-center">
-      <h1 className="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
+      <h1 className="text-4xl font-display font-normal tracking-tight text-gray-900 sm:text-6xl">
         Technology Radar
       </h1>
-      <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600 dark:text-gray-400">
+      <p className="mt-6 max-w-2xl text-lg leading-8 text-gray-600">
         Build and visualize your own technology radar. Track the technologies,
         tools, platforms, and techniques that matter to your team &mdash;
         inspired by the{" "}
@@ -15,7 +15,7 @@ export default function LandingPage() {
           href="https://www.thoughtworks.com/radar"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-blue-600 underline hover:text-blue-500"
+          className="font-medium text-[#bd4257] hover:text-[#9a3546] transition-colors"
         >
           Thoughtworks Technology Radar
         </a>
@@ -35,29 +35,29 @@ export default function LandingPage() {
 
       {/* Feature highlights */}
       <div className="mt-20 grid max-w-4xl gap-8 sm:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 text-left dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-sm border border-gray-200 bg-white p-6 text-left">
+          <h3 className="font-semibold text-gray-900">
             Custom Radars
           </h3>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Create multiple radars with custom quadrants, rings, and color
-            schemes to match your team&apos;s needs.
+          <p className="mt-2 text-sm text-gray-600">
+            Create multiple radars with custom quadrants, rings, and themes
+            to match your team&apos;s needs.
           </p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 text-left dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-sm border border-gray-200 bg-white p-6 text-left">
+          <h3 className="font-semibold text-gray-900">
             Interactive Visualization
           </h3>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-sm text-gray-600">
             Explore your radar with an interactive SVG visualization. Hover and
             click blips to see details.
           </p>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 text-left dark:border-gray-700 dark:bg-gray-800">
-          <h3 className="font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-sm border border-gray-200 bg-white p-6 text-left">
+          <h3 className="font-semibold text-gray-900">
             Track Changes
           </h3>
-          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-2 text-sm text-gray-600">
             Mark technologies as new or existing. See at a glance what&apos;s
             changed since your last radar update.
           </p>

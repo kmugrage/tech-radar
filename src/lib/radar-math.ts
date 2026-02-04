@@ -173,3 +173,68 @@ export function ringLabelPosition(
   // Place at 45 degrees (top-right diagonal)
   return polarToCartesian(cx, cy, midRadius, 45);
 }
+
+/**
+ * Check if two points are too close (collision detection).
+ * Returns true if distance between points is less than minDistance.
+ */
+export function hasCollision(
+  p1: Point,
+  p2: Point,
+  minDistance: number = 20
+): boolean {
+  const dx = p1.x - p2.x;
+  const dy = p1.y - p2.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  return distance < minDistance;
+}
+
+/**
+ * Adjust blip positions to avoid collisions using a simple force-based approach.
+ * This mutates the positions array in place.
+ */
+export function resolveCollisions(
+  positions: Point[],
+  minDistance: number = 20,
+  maxIterations: number = 50
+): void {
+  for (let iteration = 0; iteration < maxIterations; iteration++) {
+    let hadCollision = false;
+
+    for (let i = 0; i < positions.length; i++) {
+      for (let j = i + 1; j < positions.length; j++) {
+        if (hasCollision(positions[i], positions[j], minDistance)) {
+          hadCollision = true;
+
+          // Calculate repulsion vector
+          const dx = positions[j].x - positions[i].x;
+          const dy = positions[j].y - positions[i].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // Avoid division by zero
+          if (distance < 0.1) {
+            // If points are almost identical, push them apart in a random direction
+            const angle = Math.random() * Math.PI * 2;
+            positions[i].x -= Math.cos(angle) * minDistance * 0.5;
+            positions[i].y -= Math.sin(angle) * minDistance * 0.5;
+            positions[j].x += Math.cos(angle) * minDistance * 0.5;
+            positions[j].y += Math.sin(angle) * minDistance * 0.5;
+          } else {
+            // Push points apart proportionally
+            const overlap = minDistance - distance;
+            const pushX = (dx / distance) * overlap * 0.5;
+            const pushY = (dy / distance) * overlap * 0.5;
+
+            positions[i].x -= pushX;
+            positions[i].y -= pushY;
+            positions[j].x += pushX;
+            positions[j].y += pushY;
+          }
+        }
+      }
+    }
+
+    // If no collisions were found, we're done
+    if (!hadCollision) break;
+  }
+}

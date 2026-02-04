@@ -1,8 +1,8 @@
 export const DEFAULT_QUADRANTS = [
-  { name: "Techniques", position: 0, color: "#3b82f6" },
-  { name: "Platforms", position: 1, color: "#10b981" },
-  { name: "Tools", position: 2, color: "#f59e0b" },
-  { name: "Languages & Frameworks", position: 3, color: "#ef4444" },
+  { name: "Techniques", position: 0, color: "#bd4257" },
+  { name: "Platforms", position: 1, color: "#6b7c93" },
+  { name: "Tools", position: 2, color: "#8b7355" },
+  { name: "Languages & Frameworks", position: 3, color: "#5a7d7c" },
 ] as const;
 
 export const DEFAULT_RINGS = [
