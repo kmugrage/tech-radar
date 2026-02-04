@@ -1,5 +1,26 @@
 # Security Monitoring Setup
 
+## ⚠️ MVP Application - Limited Scope
+
+**This security monitoring setup is designed for an MVP application with the following constraints:**
+
+### Intended Use:
+- Small teams (5-10 users)
+- Internal/private deployment
+- Low traffic (< 100 radars, < 1000 blips per radar)
+- Single-server deployment
+
+### Not Designed For:
+- Public internet-facing applications
+- Enterprise production environments
+- High-availability requirements (99.9%+ uptime)
+- Multi-server/distributed deployments
+- Compliance-driven environments (SOC2, HIPAA, PCI-DSS)
+
+The security measures implemented provide **basic protection suitable for internal MVP use**. For production-scale deployments, significant additional hardening and monitoring infrastructure is required.
+
+---
+
 This document describes the security monitoring system implemented for the Tech Radar application.
 
 ## Overview

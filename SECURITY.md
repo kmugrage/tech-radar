@@ -1,5 +1,20 @@
 # Security Policy
 
+## ⚠️ MVP Application Disclaimer
+
+**This application is a Minimum Viable Product (MVP) designed to replace legacy "Build Your Own Radar" tooling for internal use by small teams.**
+
+### Scope and Limitations:
+- **Intended for**: Internal use, small teams (5-10 users), low traffic
+- **NOT intended for**: Public production environments, enterprise scale, or mission-critical applications
+- **Database**: SQLite (not suitable for high concurrency)
+- **Rate Limiting**: In-memory (resets on restart, not distributed)
+- **Security Level**: Basic protection appropriate for internal tools
+
+**For production deployments with higher security requirements, additional hardening including PostgreSQL migration, Redis, comprehensive monitoring, and professional security audit is required.**
+
+---
+
 ## Supported Versions
 
 We release patches for security vulnerabilities. Currently supported versions:

@@ -1,5 +1,31 @@
 # Security Fixes Implementation
 
+## ⚠️ MVP Scope Notice
+
+**This application is an MVP designed for small teams (5-10 users) with internal/private use only.**
+
+The security fixes implemented here are appropriate for:
+- Internal tools with trusted users
+- Low-traffic environments (< 100 concurrent users)
+- Single-server deployments
+- Development and testing environments
+
+**NOT suitable for**:
+- Public-facing production websites
+- Enterprise-scale applications
+- Multi-tenant SaaS platforms
+- High-security environments (banking, healthcare, etc.)
+
+For production-scale deployments, additional hardening is required including:
+- Migration to PostgreSQL with proper connection pooling
+- Redis-backed distributed rate limiting
+- Comprehensive error monitoring (Sentry)
+- Database transactions for data integrity
+- Full test coverage
+- Professional security audit
+
+---
+
 This document describes the critical security fixes implemented to address vulnerabilities identified in the code review.
 
 ## Fixed Issues
