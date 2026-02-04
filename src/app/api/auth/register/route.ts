@@ -5,8 +5,32 @@ import { registerSchema } from "@/lib/validations";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { v4 as uuid } from "uuid";
+import { rateLimit, getClientIp, getRateLimitHeaders } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  // Rate limiting: 5 requests per minute per IP
+  const clientIp = getClientIp(request);
+  const rateLimitResult = rateLimit(clientIp, 5, 60000);
+
+  if (!rateLimitResult.success) {
+    return NextResponse.json(
+      { error: "Too many registration attempts. Please try again later." },
+      {
+        status: 429,
+        headers: getRateLimitHeaders(rateLimitResult),
+      }
+    );
+  }
+
+  // Validate request body size (prevent large payload attacks)
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength) > 10000) {
+    return NextResponse.json(
+      { error: "Request payload too large" },
+      { status: 413 }
+    );
+  }
+
   const body = await request.json();
   const parsed = registerSchema.safeParse(body);
 
@@ -22,9 +46,10 @@ export async function POST(request: Request) {
   });
 
   if (existing) {
+    // Generic error message to prevent user enumeration
     return NextResponse.json(
-      { error: "An account with this email already exists" },
-      { status: 409 }
+      { error: "Registration failed. Please try a different email address." },
+      { status: 400 }
     );
   }
 

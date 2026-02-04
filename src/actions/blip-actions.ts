@@ -145,8 +145,9 @@ export async function importBlipsFromCsv(
   }
 
   const errors: string[] = [];
-  let imported = 0;
+  const blipsToInsert: Array<typeof blips.$inferInsert> = [];
 
+  // First pass: validate and prepare all blips
   for (let i = 1; i < lines.length; i++) {
     const cols = parseCsvLine(lines[i]);
     const name = cols[nameIdx]?.trim();
@@ -183,7 +184,7 @@ export async function importBlipsFromCsv(
     const offsetX = 0.2 + Math.random() * 0.6;
     const offsetY = 0.2 + Math.random() * 0.6;
 
-    await db.insert(blips).values({
+    blipsToInsert.push({
       id: uuid(),
       radarId,
       quadrantId,
@@ -194,7 +195,17 @@ export async function importBlipsFromCsv(
       offsetX,
       offsetY,
     });
-    imported++;
+  }
+
+  // Second pass: batch insert all valid blips (prevents event loop blocking)
+  // Process in chunks of 50 to avoid overwhelming the database
+  const BATCH_SIZE = 50;
+  let imported = 0;
+
+  for (let i = 0; i < blipsToInsert.length; i += BATCH_SIZE) {
+    const batch = blipsToInsert.slice(i, i + BATCH_SIZE);
+    await db.insert(blips).values(batch);
+    imported += batch.length;
   }
 
   revalidatePath(`/radar/${radarId}`);
