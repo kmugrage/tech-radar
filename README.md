@@ -7,8 +7,38 @@ A modern web application for creating and visualizing interactive Technology Rad
 **This application is intended as an MVP to replace the legacy "Build Your Own Radar" tool and is designed for:**
 - **Small teams** (5-10 users maximum)
 - **Internal/private use** within a single organization
-- **Low-traffic environments** (< 100 radars, < 1000 blips per radar)
+- **Low-traffic environments** (few radars, focused content)
 - **Single-server deployments** (no horizontal scaling)
+
+## 🎯 Design Philosophy: Focus Over Volume
+
+**A Technology Radar is a communication tool, not a comprehensive catalog.**
+
+### The 120 Blip Rule
+- **Maximum 120 blips per radar** - This is an intentional design constraint, not a technical limitation
+- Beyond 120 items, a radar becomes a directory rather than a communication tool
+- If you need more than 120 blips, your radar is too broad and needs focus
+
+### One Radar Per Organization (Recommended)
+- **Most organizations should maintain only ONE radar**
+- Multiple radars dilute focus and create confusion
+- A single radar ensures consistent communication across the organization
+- Exception: Very large enterprises with distinct business units may need separate radars
+
+### Why Focus Matters
+A Technology Radar is effective when it:
+- ✅ Highlights what's **changing** or **important** right now
+- ✅ Guides decision-making through clear recommendations
+- ✅ Sparks conversation about technology choices
+- ✅ Remains scannable and digestible in a single viewing
+
+A Technology Radar fails when it:
+- ❌ Attempts to document every technology the organization uses
+- ❌ Becomes a comprehensive inventory or catalog
+- ❌ Includes items that don't require active decision-making
+- ❌ Takes more than 15 minutes to review and understand
+
+**Remember**: The power of a Technology Radar comes from what you choose to **exclude**, not what you include.
 
 ### 🚫 NOT Suitable For:
 - Public-facing production environments
