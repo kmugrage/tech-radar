@@ -114,7 +114,8 @@ test.describe('Login Flow', () => {
   test('has link to registration', async ({ page }) => {
     await page.goto('/login');
 
-    const registerLink = page.locator('a[href="/register"]');
+    // Use .first() since register link appears in both header and login page
+    const registerLink = page.locator('a[href="/register"]').first();
     await expect(registerLink).toBeVisible();
   });
 });
