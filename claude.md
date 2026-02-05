@@ -86,31 +86,40 @@ Before marking any feature as complete:
 2. Review existing code and patterns
 3. Plan the implementation approach
 4. Identify security implications
-5. Plan test strategy
+5. Plan test strategy (unit, integration, E2E)
 
 ### During Implementation
 1. Write tests first or alongside code (TDD/BDD approach preferred)
-2. Follow security best practices
-3. Adhere to code quality standards
-4. Keep commits atomic and well-described
-5. Run tests frequently during development
+2. **New functionality MUST include corresponding test coverage**
+3. Follow security best practices
+4. Adhere to code quality standards
+5. Keep commits atomic and well-described
+6. Run tests frequently during development
 
 ### Before Committing
 1. Run full test suite: `npm test`
-2. Run security checks: `./security-check.sh`
-3. Run linter: `npm run lint`
-4. Build successfully: `npm run build`
-5. Review your own code changes
-6. Ensure commit message is descriptive
+2. Run E2E tests if UI changed: `npm run test:e2e`
+3. Run security checks: `./security-check.sh`
+4. Run linter: `npm run lint`
+5. Build successfully: `npm run build`
+6. Review your own code changes
+7. Ensure commit message is descriptive
+
+### After Pushing
+1. **IMMEDIATELY verify CI/CD pipeline status**
+2. **Pipeline MUST be green before any other work**
+3. If pipeline fails, fix it as the highest priority
+4. Never leave a red pipeline - it erodes trust in the build system
 
 ### Definition of Done
 A feature is ONLY complete when:
 - ✅ All functionality implemented and working
-- ✅ Comprehensive tests written and passing
+- ✅ **Comprehensive tests written for ALL new code**
+- ✅ **Test coverage maintained or increased**
 - ✅ Security review completed with no issues
 - ✅ Code quality standards met
 - ✅ Documentation updated (if needed)
-- ✅ All CI/CD checks passing
+- ✅ **All CI/CD checks passing (GREEN PIPELINE)**
 - ✅ Code reviewed (if applicable)
 
 ## Project-Specific Context
@@ -130,10 +139,12 @@ A feature is ONLY complete when:
 ## Non-Negotiable Rules
 
 1. **Security is not optional** - No exceptions
-2. **Tests are mandatory** - No untested code in production
-3. **Code quality matters** - Clean, maintainable code always
-4. **Follow the existing patterns** - Consistency across the codebase
-5. **Fix it right the first time** - Don't create technical debt
+2. **Tests are mandatory** - Every new feature MUST include test coverage
+3. **Green pipeline is sacred** - Fix red builds immediately before any other work
+4. **Code quality matters** - Clean, maintainable code always
+5. **Follow the existing patterns** - Consistency across the codebase
+6. **Fix it right the first time** - Don't create technical debt
+7. **Test coverage grows with the codebase** - New code requires new tests
 
 ---
 
