@@ -1,5 +1,9 @@
 # Technology Radar - MVP Application
 
+![CI/CD Pipeline](https://github.com/YOUR_USERNAME/tech-radar/actions/workflows/ci.yml/badge.svg)
+![Tests](https://github.com/YOUR_USERNAME/tech-radar/actions/workflows/test.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+
 A modern web application for creating and visualizing interactive Technology Radars, inspired by the [Thoughtworks Technology Radar](https://www.thoughtworks.com/radar).
 
 ## ⚠️ Project Status: Minimum Viable Product (MVP)

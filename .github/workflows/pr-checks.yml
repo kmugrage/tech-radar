@@ -1,0 +1,64 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-validation:
+    name: Validate PR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run all tests
+        run: npm test
+
+      - name: Check for console.log statements
+        run: |
+          if git diff origin/${{ github.base_ref }}...HEAD -- '*.ts' '*.tsx' | grep -E '^\+.*console\.(log|debug|info)'; then
+            echo "::warning::Found console.log statements in your changes. Please remove them."
+          fi
+
+      - name: Check test coverage
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Security check
+        run: ./security-check.sh
+
+      - name: Build check
+        run: npm run build
+
+      - name: Comment PR with test results
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const testsPassed = '${{ job.status }}' === 'success';
+            const emoji = testsPassed ? '✅' : '❌';
+            const status = testsPassed ? 'All checks passed!' : 'Some checks failed';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${emoji} **${status}**
+
+              Test suite: ${{ job.status }}
+
+              📊 View the [detailed test results](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`
+            });

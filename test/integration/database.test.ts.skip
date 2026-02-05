@@ -1,0 +1,526 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { eq, and } from 'drizzle-orm';
+import * as schema from '@/lib/db/schema';
+import {
+  createTestDb,
+  createTestUser,
+  createTestRadar,
+  createTestBlip,
+  cleanupTestDb,
+} from '../helpers/db-test-helper';
+
+describe('Database Integration Tests', () => {
+  let testDb: ReturnType<typeof createTestDb>;
+
+  beforeEach(() => {
+    testDb = createTestDb();
+  });
+
+  afterEach(() => {
+    cleanupTestDb(testDb.sqlite);
+  });
+
+  describe('User Operations', () => {
+    it('creates a user successfully', async () => {
+      const { userId } = await createTestUser(testDb.db);
+
+      const user = await testDb.db.query.users.findFirst({
+        where: eq(schema.users.id, userId),
+      });
+
+      expect(user).toBeDefined();
+      expect(user?.id).toBe(userId);
+      expect(user?.passwordHash).toBeDefined();
+    });
+
+    it('enforces unique email constraint', async () => {
+      const email = 'duplicate@example.com';
+      await createTestUser(testDb.db, { email });
+
+      await expect(
+        createTestUser(testDb.db, { email })
+      ).rejects.toThrow();
+    });
+
+    it('allows multiple users with different emails', async () => {
+      const user1 = await createTestUser(testDb.db, { email: 'user1@example.com' });
+      const user2 = await createTestUser(testDb.db, { email: 'user2@example.com' });
+
+      expect(user1.userId).not.toBe(user2.userId);
+    });
+  });
+
+  describe('Radar Operations', () => {
+    it('creates a radar with default quadrants and rings', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const radar = await testDb.db.query.radars.findFirst({
+        where: eq(schema.radars.id, radarId),
+        with: {
+          quadrants: true,
+          rings: true,
+        },
+      });
+
+      expect(radar).toBeDefined();
+      expect(radar?.quadrants).toHaveLength(4);
+      expect(radar?.rings).toHaveLength(4);
+      expect(quadrantIds).toHaveLength(4);
+      expect(ringIds).toHaveLength(4);
+    });
+
+    it('associates radar with correct user', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId } = await createTestRadar(testDb.db, userId);
+
+      const radar = await testDb.db.query.radars.findFirst({
+        where: eq(schema.radars.id, radarId),
+      });
+
+      expect(radar?.userId).toBe(userId);
+    });
+
+    it('allows multiple radars per user', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const radar1 = await createTestRadar(testDb.db, userId, { name: 'Radar 1' });
+      const radar2 = await createTestRadar(testDb.db, userId, { name: 'Radar 2' });
+
+      const radars = await testDb.db.query.radars.findMany({
+        where: eq(schema.radars.userId, userId),
+      });
+
+      expect(radars).toHaveLength(2);
+      expect(radar1.radarId).not.toBe(radar2.radarId);
+    });
+
+    it('cascades delete from user to radars', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId } = await createTestRadar(testDb.db, userId);
+
+      // Delete user
+      await testDb.db.delete(schema.users).where(eq(schema.users.id, userId));
+
+      // Verify radar is also deleted
+      const radar = await testDb.db.query.radars.findFirst({
+        where: eq(schema.radars.id, radarId),
+      });
+
+      expect(radar).toBeUndefined();
+    });
+
+    it('updates radar timestamp on modification', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId } = await createTestRadar(testDb.db, userId);
+
+      const originalRadar = await testDb.db.query.radars.findFirst({
+        where: eq(schema.radars.id, radarId),
+      });
+
+      // Wait a moment to ensure timestamp difference
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      const newUpdatedAt = Date.now();
+      await testDb.db
+        .update(schema.radars)
+        .set({ name: 'Updated Name', updatedAt: newUpdatedAt })
+        .where(eq(schema.radars.id, radarId));
+
+      const updatedRadar = await testDb.db.query.radars.findFirst({
+        where: eq(schema.radars.id, radarId),
+      });
+
+      expect(updatedRadar?.updatedAt).toBeGreaterThan(originalRadar!.updatedAt);
+    });
+  });
+
+  describe('Quadrant Operations', () => {
+    it('creates quadrants with correct positions', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId } = await createTestRadar(testDb.db, userId);
+
+      const quadrants = await testDb.db.query.quadrants.findMany({
+        where: eq(schema.quadrants.radarId, radarId),
+      });
+
+      const positions = quadrants.map(q => q.position).sort();
+      expect(positions).toEqual([0, 1, 2, 3]);
+    });
+
+    it('updates quadrant properties', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds } = await createTestRadar(testDb.db, userId);
+
+      const quadrantId = quadrantIds[0];
+      await testDb.db
+        .update(schema.quadrants)
+        .set({ name: 'Updated Quadrant', color: '#ff0000' })
+        .where(eq(schema.quadrants.id, quadrantId));
+
+      const quadrant = await testDb.db.query.quadrants.findFirst({
+        where: eq(schema.quadrants.id, quadrantId),
+      });
+
+      expect(quadrant?.name).toBe('Updated Quadrant');
+      expect(quadrant?.color).toBe('#ff0000');
+    });
+
+    it('cascades delete from radar to quadrants', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds } = await createTestRadar(testDb.db, userId);
+
+      // Delete radar
+      await testDb.db.delete(schema.radars).where(eq(schema.radars.id, radarId));
+
+      // Verify quadrants are also deleted
+      const quadrants = await testDb.db.query.quadrants.findMany({
+        where: eq(schema.quadrants.radarId, radarId),
+      });
+
+      expect(quadrants).toHaveLength(0);
+    });
+  });
+
+  describe('Ring Operations', () => {
+    it('creates rings with correct positions and opacity', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId } = await createTestRadar(testDb.db, userId);
+
+      const rings = await testDb.db.query.rings.findMany({
+        where: eq(schema.rings.radarId, radarId),
+      });
+
+      const positions = rings.map(r => r.position).sort();
+      expect(positions).toEqual([0, 1, 2, 3]);
+
+      // Check opacity values are between 0 and 1
+      rings.forEach(ring => {
+        expect(ring.opacity).toBeGreaterThanOrEqual(0);
+        expect(ring.opacity).toBeLessThanOrEqual(1);
+      });
+    });
+
+    it('updates ring name', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, ringIds } = await createTestRadar(testDb.db, userId);
+
+      const ringId = ringIds[0];
+      await testDb.db
+        .update(schema.rings)
+        .set({ name: 'Custom Ring Name' })
+        .where(eq(schema.rings.id, ringId));
+
+      const ring = await testDb.db.query.rings.findFirst({
+        where: eq(schema.rings.id, ringId),
+      });
+
+      expect(ring?.name).toBe('Custom Ring Name');
+    });
+
+    it('cascades delete from radar to rings', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, ringIds } = await createTestRadar(testDb.db, userId);
+
+      // Delete radar
+      await testDb.db.delete(schema.radars).where(eq(schema.radars.id, radarId));
+
+      // Verify rings are also deleted
+      const rings = await testDb.db.query.rings.findMany({
+        where: eq(schema.rings.radarId, radarId),
+      });
+
+      expect(rings).toHaveLength(0);
+    });
+  });
+
+  describe('Blip Operations', () => {
+    it('creates a blip successfully', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const { blipId } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0]
+      );
+
+      const blip = await testDb.db.query.blips.findFirst({
+        where: eq(schema.blips.id, blipId),
+      });
+
+      expect(blip).toBeDefined();
+      expect(blip?.radarId).toBe(radarId);
+      expect(blip?.quadrantId).toBe(quadrantIds[0]);
+      expect(blip?.ringId).toBe(ringIds[0]);
+    });
+
+    it('stores offset coordinates correctly', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const { blipId } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0],
+        { offsetX: 0.3, offsetY: 0.7 }
+      );
+
+      const blip = await testDb.db.query.blips.findFirst({
+        where: eq(schema.blips.id, blipId),
+      });
+
+      expect(blip?.offsetX).toBe(0.3);
+      expect(blip?.offsetY).toBe(0.7);
+    });
+
+    it('stores isNew flag correctly', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const { blipId: newBlipId } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0],
+        { isNew: true }
+      );
+
+      const { blipId: oldBlipId } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0],
+        { isNew: false }
+      );
+
+      const newBlip = await testDb.db.query.blips.findFirst({
+        where: eq(schema.blips.id, newBlipId),
+      });
+
+      const oldBlip = await testDb.db.query.blips.findFirst({
+        where: eq(schema.blips.id, oldBlipId),
+      });
+
+      expect(newBlip?.isNew).toBe(1); // SQLite stores boolean as integer
+      expect(oldBlip?.isNew).toBe(0);
+    });
+
+    it('allows multiple blips in same quadrant and ring', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      await createTestBlip(testDb.db, radarId, quadrantIds[0], ringIds[0], {
+        name: 'Blip 1',
+      });
+      await createTestBlip(testDb.db, radarId, quadrantIds[0], ringIds[0], {
+        name: 'Blip 2',
+      });
+
+      const blips = await testDb.db.query.blips.findMany({
+        where: and(
+          eq(schema.blips.quadrantId, quadrantIds[0]),
+          eq(schema.blips.ringId, ringIds[0])
+        ),
+      });
+
+      expect(blips).toHaveLength(2);
+    });
+
+    it('updates blip properties', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const { blipId } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0]
+      );
+
+      const newUpdatedAt = Date.now();
+      await testDb.db
+        .update(schema.blips)
+        .set({
+          name: 'Updated Blip',
+          description: 'New description',
+          quadrantId: quadrantIds[1],
+          ringId: ringIds[1],
+          updatedAt: newUpdatedAt,
+        })
+        .where(eq(schema.blips.id, blipId));
+
+      const blip = await testDb.db.query.blips.findFirst({
+        where: eq(schema.blips.id, blipId),
+      });
+
+      expect(blip?.name).toBe('Updated Blip');
+      expect(blip?.description).toBe('New description');
+      expect(blip?.quadrantId).toBe(quadrantIds[1]);
+      expect(blip?.ringId).toBe(ringIds[1]);
+    });
+
+    it('cascades delete from radar to blips', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      await createTestBlip(testDb.db, radarId, quadrantIds[0], ringIds[0]);
+      await createTestBlip(testDb.db, radarId, quadrantIds[1], ringIds[1]);
+
+      // Delete radar
+      await testDb.db.delete(schema.radars).where(eq(schema.radars.id, radarId));
+
+      // Verify blips are also deleted
+      const blips = await testDb.db.query.blips.findMany({
+        where: eq(schema.blips.radarId, radarId),
+      });
+
+      expect(blips).toHaveLength(0);
+    });
+
+    it('deletes single blip without affecting others', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const { blipId: blip1Id } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0],
+        { name: 'Blip 1' }
+      );
+      const { blipId: blip2Id } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0],
+        { name: 'Blip 2' }
+      );
+
+      // Delete first blip
+      await testDb.db.delete(schema.blips).where(eq(schema.blips.id, blip1Id));
+
+      // Verify only second blip remains
+      const remainingBlips = await testDb.db.query.blips.findMany({
+        where: eq(schema.blips.radarId, radarId),
+      });
+
+      expect(remainingBlips).toHaveLength(1);
+      expect(remainingBlips[0].id).toBe(blip2Id);
+    });
+  });
+
+  describe('Query Relations', () => {
+    it('queries radar with all relations', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      await createTestBlip(testDb.db, radarId, quadrantIds[0], ringIds[0]);
+
+      const radar = await testDb.db.query.radars.findFirst({
+        where: eq(schema.radars.id, radarId),
+        with: {
+          quadrants: true,
+          rings: true,
+          blips: true,
+        },
+      });
+
+      expect(radar).toBeDefined();
+      expect(radar?.quadrants).toHaveLength(4);
+      expect(radar?.rings).toHaveLength(4);
+      expect(radar?.blips).toHaveLength(1);
+    });
+
+    it('queries blip with quadrant and ring relations', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds, ringIds } = await createTestRadar(
+        testDb.db,
+        userId
+      );
+
+      const { blipId } = await createTestBlip(
+        testDb.db,
+        radarId,
+        quadrantIds[0],
+        ringIds[0]
+      );
+
+      const blip = await testDb.db.query.blips.findFirst({
+        where: eq(schema.blips.id, blipId),
+        with: {
+          quadrant: true,
+          ring: true,
+        },
+      });
+
+      expect(blip?.quadrant).toBeDefined();
+      expect(blip?.ring).toBeDefined();
+      expect(blip?.quadrant.id).toBe(quadrantIds[0]);
+      expect(blip?.ring.id).toBe(ringIds[0]);
+    });
+  });
+
+  describe('Foreign Key Constraints', () => {
+    it('prevents creating blip with invalid quadrantId', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, ringIds } = await createTestRadar(testDb.db, userId);
+
+      await expect(
+        createTestBlip(testDb.db, radarId, 'invalid-quadrant-id', ringIds[0])
+      ).rejects.toThrow();
+    });
+
+    it('prevents creating blip with invalid ringId', async () => {
+      const { userId } = await createTestUser(testDb.db);
+      const { radarId, quadrantIds } = await createTestRadar(testDb.db, userId);
+
+      await expect(
+        createTestBlip(testDb.db, radarId, quadrantIds[0], 'invalid-ring-id')
+      ).rejects.toThrow();
+    });
+
+    it('prevents creating radar with invalid userId', async () => {
+      const now = Date.now();
+
+      await expect(
+        testDb.db.insert(schema.radars).values({
+          id: 'test-radar',
+          userId: 'invalid-user-id',
+          name: 'Test Radar',
+          description: null,
+          createdAt: now,
+          updatedAt: now,
+        })
+      ).rejects.toThrow();
+    });
+  });
+});
