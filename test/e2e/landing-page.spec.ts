@@ -4,15 +4,15 @@ test.describe('Landing Page', () => {
   test('displays the main heading', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.locator('h1')).toContainText('Tech Radar');
+    await expect(page.locator('h1')).toContainText('Technology Radar');
   });
 
   test('has navigation links', async ({ page }) => {
     await page.goto('/');
 
-    // Check for login and register links
-    const loginLink = page.locator('a[href="/login"]');
-    const registerLink = page.locator('a[href="/register"]');
+    // Check for login and register links (use .first() since there are multiple)
+    const loginLink = page.locator('a[href="/login"]').first();
+    const registerLink = page.locator('a[href="/register"]').first();
 
     await expect(loginLink).toBeVisible();
     await expect(registerLink).toBeVisible();
@@ -21,14 +21,16 @@ test.describe('Landing Page', () => {
   test('navigates to register page', async ({ page }) => {
     await page.goto('/');
 
-    await page.click('a[href="/register"]');
+    // Click the first register link (header nav)
+    await page.locator('a[href="/register"]').first().click();
     await expect(page).toHaveURL('/register');
   });
 
   test('navigates to login page', async ({ page }) => {
     await page.goto('/');
 
-    await page.click('a[href="/login"]');
+    // Click the first login link (header nav)
+    await page.locator('a[href="/login"]').first().click();
     await expect(page).toHaveURL('/login');
   });
 });
