@@ -41,6 +41,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
 
+    env:
+      AUTH_SECRET: test-secret-for-ci-only-not-for-production
+      AUTH_GITHUB_ID: mock-github-id
+      AUTH_GITHUB_SECRET: mock-github-secret
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
